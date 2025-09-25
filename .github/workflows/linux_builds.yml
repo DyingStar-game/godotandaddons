@@ -194,6 +194,7 @@ jobs:
 
       - name: Unit tests
         run: |
+          ls bin/
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
           ${{ matrix.bin }} --headless --test --force-colors
