@@ -72,11 +72,13 @@ jobs:
           dotnet-version: '8.0.x'
       
       - name: Init nuget
-        run: dotnet nuget add source c:\nuget --name MyLocalNugetSource`
+        run: |
+          New-Item -ItemType Directory -Force -Path D:\a\godotandaddons\godotandaddons\nuget
+          dotnet nuget add source D:\a\godotandaddons\godotandaddons\nuget --name MyLocalNugetSource`
 
       - name: Build .NET assemblies
         run: |
-          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --push-nupkgs-local c:\nuget --godot-platform=window --precision=double
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --push-nupkgs-local D:\a\godotandaddons\godotandaddons\nuget --precision=double
           ls -l bin/
 
       - name: Save Godot build cache
