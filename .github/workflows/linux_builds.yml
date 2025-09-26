@@ -5,9 +5,8 @@ on:
 # Global Settings
 env:
   SCONS_FLAGS: >-
-    dev_mode=yes
-    module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.17.0/"
+    module_mono_enabled=yes
+    precision=double
   GODOT_CPP_BRANCH: 4.5
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -29,9 +28,6 @@ jobs:
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono-double
             target: editor
-            scons-flags: >-
-              module_mono_enabled=yes
-              precision=double
             bin: ./bin/godot.linuxbsd.editor.double.x86_64.mono
             build-mono: true
             doc-test: true
@@ -44,18 +40,12 @@ jobs:
           - name: Template w/ Mono, release (target=template_release)
             cache-name: linux-template-mono
             target: template_release
-            scons-flags: >-
-              module_mono_enabled=yes
-              precision=double
             bin: ./bin/godot.linuxbsd.template_release.double.x86_64.mono
             artifact: true
 
           - name: Template w/ Mono, debug (target=template_debug)
             cache-name: linux-template-mono-debug
             target: template_debug
-            scons-flags: >-
-              module_mono_enabled=yes
-              precision=double
             bin: ./bin/godot.linuxbsd.template_debug.double.x86_64.mono
             artifact: true
 

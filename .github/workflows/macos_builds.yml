@@ -73,10 +73,10 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Generate glue sources (x86_64)
-        run: ./bin/godot.macos.editor.double.x86_64.mono --headless --generate-mono-glue modules/mono/glue
+        run: ./bin/godot.macos.${{ matrix.target }}.double.x86_64.mono --headless --generate-mono-glue modules/mono/glue
 
       - name: Generate glue sources (arm64)
-        run: ./bin/godot.macos.editor.double.arm64.mono --headless --generate-mono-glue modules/mono/glue
+        run: ./bin/godot.macos.${{ matrix.target }}.double.arm64.mono --headless --generate-mono-glue modules/mono/glue
 
       - name: Build .NET assemblies (x86_64)
         run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=macos --precision=double arch=x86_64 
