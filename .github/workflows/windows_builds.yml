@@ -78,7 +78,7 @@ jobs:
 
       - name: Build .NET assemblies
         run: |
-          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --push-nupkgs-local D:\a\godotandaddons\godotandaddons\nuget --precision=double
+          python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --push-nupkgs-local D:\a\godotandaddons\godotandaddons\nuget --precision=double
           ls -l bin/
 
       - name: Save Godot build cache
