@@ -67,7 +67,9 @@ jobs:
         run: ${{ matrix.bin }} --headless --generate-mono-glue modules/mono/glue
 
       - name: Build .NET assemblies
-        run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=window --precision=double
+        run: |
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=window --precision=double
+          ls -l bin/
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
@@ -75,10 +77,10 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Prepare artifact
-        if: matrix.compiler == 'msvc'
-        run: |
-          Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+      # - name: Prepare artifact
+      #   if: matrix.compiler == 'msvc'
+      #   run: |
+      #     Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
         if: matrix.compiler == 'msvc'
