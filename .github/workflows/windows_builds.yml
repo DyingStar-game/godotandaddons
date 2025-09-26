@@ -23,20 +23,20 @@ jobs:
           - name: Editor (target=editor)
             cache-name: windows-editor
             target: editor
-            bin: ./bin/godot.windows.editor.double.x86_64.exe
+            bin: ./bin/godot.windows.editor.double.x86_64.mono.exe
             compiler: msvc
 
           - name: Template (target=template_release)
             cache-name: windows-template
             target: template_release
-            bin: ./bin/godot.windows.template_release.double.x86_64.console.exe
+            bin: ./bin/godot.windows.template_release.double.x86_64.mono.console.exe
             compiler: msvc
 
           - name: Template w/ GCC (target=template_release, use_mingw=yes)
             cache-name: windows-template-gcc
             # MinGW takes MUCH longer to compile; save time by only targeting Template.
             target: template_release
-            bin: ./bin/godot.windows.template_release.double.x86_64.console.exe
+            bin: ./bin/godot.windows.template_release.double.x86_64.mono.console.exe
             compiler: gcc
 
     steps:
