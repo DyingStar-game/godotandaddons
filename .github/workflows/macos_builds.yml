@@ -38,11 +38,11 @@ jobs:
       - name: Select Xcode 16
         run: sudo xcode-select -s /Applications/Xcode_16.2.app
 
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
+      # - name: Restore Godot build cache
+      #   uses: ./.github/actions/godot-cache-restore
+      #   with:
+      #     cache-name: ${{ matrix.cache-name }}
+      #   continue-on-error: true
 
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
@@ -81,11 +81,11 @@ jobs:
       - name: Build .NET assemblies
         run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=macos --precision=double 
 
-      - name: Save Godot build cache
-        uses: ./.github/actions/godot-cache-save
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
+      # - name: Save Godot build cache
+      #   uses: ./.github/actions/godot-cache-save
+      #   with:
+      #     cache-name: ${{ matrix.cache-name }}
+      #   continue-on-error: true
 
       - name: Prepare artifact
         run: |
