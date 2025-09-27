@@ -90,8 +90,8 @@ jobs:
       - name: Prepare artifact
         run: |
           ls bin/
-          lipo -create ./bin/godot.macos.${{ matrix.target }}.double.x86_64 ./bin/godot.macos.${{ matrix.target }}.double.arm64 -output ./bin/godot.macos.${{ matrix.target }}.double.universal
-          rm ./bin/godot.macos.${{ matrix.target }}.double.x86_64 ./bin/godot.macos.${{ matrix.target }}.double.arm64
+          # lipo -create ./bin/godot.macos.${{ matrix.target }}.double.x86_64 ./bin/godot.macos.${{ matrix.target }}.double.arm64 -output ./bin/godot.macos.${{ matrix.target }}.double.universal
+          # rm ./bin/godot.macos.${{ matrix.target }}.double.x86_64 ./bin/godot.macos.${{ matrix.target }}.double.arm64
           strip bin/godot.*
           chmod +x bin/godot.*
 
