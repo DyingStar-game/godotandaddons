@@ -99,7 +99,8 @@ jobs:
       
       - name: delete dotnet 9
         run: |
-          apt-get remove -y dotnet-sdk-9.0
+          apt list --installed
+          sudo apt-get remove -y dotnet-sdk-9.0
           apt list --installed
 
       - name: Download pre-built AccessKit
