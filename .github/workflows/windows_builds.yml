@@ -87,10 +87,10 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      # - name: Prepare artifact
-      #   if: matrix.compiler == 'msvc'
-      #   run: |
-      #     Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+      - name: Prepare artifact
+        if: matrix.compiler == 'msvc'
+        run: |
+          Remove-Item bin/* -Include *.exp,*.lib -Force
 
       - name: Upload artifact
         if: matrix.compiler == 'msvc'
