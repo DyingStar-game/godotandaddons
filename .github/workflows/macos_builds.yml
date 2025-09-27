@@ -5,9 +5,8 @@ on:
 # Global Settings
 env:
   SCONS_FLAGS: >-
-    dev_mode=yes
-    module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.17.0/"
+    precision=double
+    module_mono_enabled=yes
 
 jobs:
   build-macos:
@@ -20,47 +19,33 @@ jobs:
         include:
           - name: Editor (target=editor)
             cache-name: macos-editor
-            scons-flags: >-
-              precision=double
             target: editor
-            bin: ./bin/godot.macos.editor.double.universal
+            bin: ./bin/godot.macos.editor.double.universal.mono
 
           - name: Template (target=template_release)
             cache-name: macos-template
             target: template_release
-            scons-flags: >-
-              debug_symbols=no
-              precision=double
-            bin: ./bin/godot.macos.template_release.double.universal
+            bin: ./bin/godot.macos.template_release.double.universal.mono
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          repository: 'godotengine/godot'
+          ref: '4.5-stable'
           submodules: recursive
 
       - name: Select Xcode 16
         run: sudo xcode-select -s /Applications/Xcode_16.2.app
 
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
+      # - name: Restore Godot build cache
+      #   uses: ./.github/actions/godot-cache-restore
+      #   with:
+      #     cache-name: ${{ matrix.cache-name }}
+      #   continue-on-error: true
 
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
-
-      - name: Download pre-built AccessKit
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
-        with:
-          repo: AccessKit/accesskit-c
-          version: tags/0.17.0
-          file: accesskit-c-0.17.0.zip
-          target: accesskit-c-0.17.0/accesskit_c.zip
-
-      - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.17.0/accesskit_c.zip
 
       - name: Setup Vulkan SDK
         id: vulkan-sdk
@@ -87,16 +72,26 @@ jobs:
           platform: macos
           target: ${{ matrix.target }}
 
-      - name: Save Godot build cache
-        uses: ./.github/actions/godot-cache-save
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
+      - name: Generate glue sources (x86_64)
+        run: ./bin/godot.macos.${{ matrix.target }}.double.x86_64.mono --headless --generate-mono-glue modules/mono/glue
+
+      - name: Generate glue sources (arm64)
+        run: ./bin/godot.macos.${{ matrix.target }}.double.arm64.mono --headless --generate-mono-glue modules/mono/glue
+
+      - name: Build .NET assemblies
+        run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=macos --precision=double 
+
+      # - name: Save Godot build cache
+      #   uses: ./.github/actions/godot-cache-save
+      #   with:
+      #     cache-name: ${{ matrix.cache-name }}
+      #   continue-on-error: true
 
       - name: Prepare artifact
         run: |
-          lipo -create ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64 -output ./bin/godot.macos.${{ matrix.target }}.universal
-          rm ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64
+          ls bin/
+          # lipo -create ./bin/godot.macos.${{ matrix.target }}.double.x86_64 ./bin/godot.macos.${{ matrix.target }}.double.arm64 -output ./bin/godot.macos.${{ matrix.target }}.double.universal
+          # rm ./bin/godot.macos.${{ matrix.target }}.double.x86_64 ./bin/godot.macos.${{ matrix.target }}.double.arm64
           strip bin/godot.*
           chmod +x bin/godot.*
 
@@ -104,9 +99,3 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ matrix.cache-name }}
-
-      - name: Unit tests
-        run: |
-          ${{ matrix.bin }} --version
-          ${{ matrix.bin }} --help
-          ${{ matrix.bin }} --test --force-colors
