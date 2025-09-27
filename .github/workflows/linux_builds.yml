@@ -67,12 +67,6 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           echo "Disk usage after:" && df -h
 
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
-
       - name: Setup Python and SCons
         if: "!matrix.legacy-scons"
         uses: ./.github/actions/godot-deps
@@ -96,12 +90,6 @@ jobs:
         with:
           # Targeting the oldest version we want to support to ensure it still builds.
           dotnet-version: 8.0.100
-      
-      - name: delete dotnet 9
-        run: |
-          apt list --installed
-          sudo apt-get remove -y dotnet-sdk-9.0
-          apt list --installed
 
       - name: Download pre-built AccessKit
         uses: dsaltares/fetch-gh-release-asset@1.1.2
@@ -133,12 +121,6 @@ jobs:
       #     scons-flags: target=template_debug dev_build=yes verbose=yes
       #     godot-cpp-branch: ${{ env.GODOT_CPP_BRANCH }}
 
-      - name: Save Godot build cache
-        uses: ./.github/actions/godot-cache-save
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
-
       - name: Generate C# glue
         if: matrix.build-mono
         run: |
@@ -148,7 +130,6 @@ jobs:
         if: matrix.build-mono
         run: |
           dotnet --info
-          apt list --installed
           ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd --werror
 
       - name: Prepare artifact
