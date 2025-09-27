@@ -1,5 +1,5 @@
 name: 🔗 GHA
-on: [push, pull_request, merge_group]
+on: [push, merge_group]
 
 concurrency:
   group: ${{ github.workflow }}|${{ github.ref_name }}
@@ -29,3 +29,7 @@ jobs:
     name: 🏁 Windows
     needs: static-checks
     uses: ./.github/workflows/windows_builds.yml
+
+  # wwise:
+  #   name: wwise
+  #   uses: ./.github/workflows/wwise_builds.yml
