@@ -78,11 +78,8 @@ jobs:
       - name: Generate glue sources (arm64)
         run: ./bin/godot.macos.${{ matrix.target }}.double.arm64.mono --headless --generate-mono-glue modules/mono/glue
 
-      - name: Build .NET assemblies (x86_64)
-        run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=macos --precision=double arch=x86_64 
-
-      - name: Build .NET assemblies (arm64)
-        run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=macos --precision=double arch=arm64
+      - name: Build .NET assemblies
+        run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=macos --precision=double 
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
