@@ -20,7 +20,7 @@ jobs:
       - name: Setup dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libwayland-bin  # TODO: Figure out somehow how to embed this one.
+          sudo apt-get install libwayland-bin scons  # TODO: Figure out somehow how to embed this one.
 
       - name: Force remove preinstalled .NET SDKs
         run: |
