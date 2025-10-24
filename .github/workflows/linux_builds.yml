@@ -100,7 +100,7 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: module_mono_enabled=yes precision=double}}
+          scons-flags: module_mono_enabled=yes precision=double
           platform: linuxbsd
           target: ${{ matrix.target }}
 
