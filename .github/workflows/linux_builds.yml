@@ -15,7 +15,7 @@ jobs:
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono-double
             target: editor
-            bin: ./bin/godot.linuxbsd.editor.double.x86_64.mono
+            bin: godot.linuxbsd.editor.double.x86_64.mono
             doc-test: true
             proj-conv: true
             api-compat: true
@@ -26,13 +26,13 @@ jobs:
           - name: Template w/ Mono, release (target=template_release)
             cache-name: linux-template-mono
             target: template_release
-            bin: ./bin/godot.linuxbsd.template_release.double.x86_64.mono
+            bin: godot.linuxbsd.template_release.double.x86_64.mono
             artifact: true
 
           - name: Template w/ Mono, debug (target=template_debug)
             cache-name: linux-template-mono-debug
             target: template_debug
-            bin: ./bin/godot.linuxbsd.template_debug.double.x86_64.mono
+            bin: godot.linuxbsd.template_debug.double.x86_64.mono
             artifact: true
 
     steps:
@@ -114,8 +114,8 @@ jobs:
 
       - name: Generate C# glue
         run: |
-
-          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
+          cd bin
+          ./${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
 
       - name: Build .NET solutions
         run: |
@@ -158,18 +158,18 @@ jobs:
       - name: Check for GDExtension compatibility
         if: matrix.api-compat
         run: |
-          ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}"
+          ./misc/scripts/validate_extension_api.sh "./bin/${{ matrix.bin }}"
 
       # Download and run the test project
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
         if: matrix.proj-test
         with:
-          bin: ${{ matrix.bin }}
+          bin: ./bin/${{ matrix.bin }}
 
       # Test the project converter
       - name: Test project converter
         uses: ./.github/actions/godot-converter-test
         if: matrix.proj-conv
         with:
-          bin: ${{ matrix.bin }}
+          bin: ./bin/${{ matrix.bin }}
