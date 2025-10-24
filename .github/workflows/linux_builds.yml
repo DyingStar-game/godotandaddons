@@ -53,6 +53,7 @@ jobs:
           ./godot.linuxbsd.editor.double.x86_64.mono --headless --generate-mono-glue modules/mono/glue
           mv -f modules/mono/glue/GodotSharp/GodotSharp/Generated ../modules/mono/glue/GodotSharp/GodotSharp/
           mv -f modules/mono/glue/GodotSharp/GodotSharpEditor/Generated ../modules/mono/glue/GodotSharp/GodotSharpEditor/
+          rm -fr modules
 
       - name: Build .NET solutions
         run: |
@@ -66,7 +67,6 @@ jobs:
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
-        if: matrix.artifact
         with:
           name: linux-editor-mono-double
 
