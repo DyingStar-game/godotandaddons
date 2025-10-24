@@ -36,25 +36,16 @@ jobs:
           sudo apt --reinstall install dotnet8 dotnet-sdk-8.0 dotnet-runtime-8.0
 
       - name: Compilation editor
-        uses: ./.github/actions/godot-build
-        with:
-          scons-flags: module_mono_enabled=yes precision=double
-          platform: linuxbsd
-          target: editor
+        run: |
+          scons platform=linuxbsd target=editor production=yes precision=double module_mono_enabled=yes
 
       - name: Compilation template_debug
-        uses: ./.github/actions/godot-build
-        with:
-          scons-flags: module_mono_enabled=yes precision=double
-          platform: linuxbsd
-          target: template_debug
+        run: |
+          scons platform=linuxbsd target=template_debug precision=double module_mono_enabled=yes
 
       - name: Compilation template_release
-        uses: ./.github/actions/godot-build
-        with:
-          scons-flags: module_mono_enabled=yes precision=double production=yes
-          platform: linuxbsd
-          target: template_release
+        run: |
+          scons platform=linuxbsd target=template_release production=yes precision=double module_mono_enabled=yes
 
       - name: Generate C# glue
         run: |
