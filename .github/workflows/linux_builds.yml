@@ -115,7 +115,7 @@ jobs:
       - name: Generate C# glue
         run: |
           cd bin
-          ./${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
+          ./${{ matrix.bin }} --headless --generate-mono-glue modules/mono/glue
 
       - name: Build .NET solutions
         run: |
