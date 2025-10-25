@@ -60,6 +60,10 @@ jobs:
           dotnet --info
           python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --precision=double
 
+      - name: clean obj folder
+        run: |
+          rm -fr bin/obj
+
       - name: Prepare artifact
         run: |
           strip bin/godot.*
