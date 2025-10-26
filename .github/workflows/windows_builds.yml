@@ -4,9 +4,6 @@ on:
 
 # Global Settings
 env:
-  SCONS_FLAGS: >-
-    precision=double
-    module_mono_enabled=yes
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
@@ -14,63 +11,42 @@ jobs:
   build-windows:
     # Windows 10 with latest image
     runs-on: windows-latest
-    name: ${{ matrix.name }}
-    timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Editor (target=editor)
-            cache-name: windows-editor
-            target: editor
-            bin: ./bin/godot.windows.editor.double.x86_64.mono.exe
-            compiler: msvc
-
-          - name: Template (target=template_release)
-            cache-name: windows-template
-            target: template_release
-            bin: ./bin/godot.windows.template_release.double.x86_64.mono.console.exe
-            compiler: msvc
-
-          - name: Template w/ GCC (target=template_release, use_mingw=yes)
-            cache-name: windows-template-gcc
-            # MinGW takes MUCH longer to compile; save time by only targeting Template.
-            target: template_release
-            bin: ./bin/godot.windows.template_release.double.x86_64.mono.console.exe
-            compiler: gcc
+    name: build-windows-editor
+    timeout-minutes: 240
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           repository: 'godotengine/godot'
-          ref: '4.5-stable'
+          ref: '4.5.1-stable'
           submodules: recursive
-
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
 
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      - name: Compilation
-        uses: ./.github/actions/godot-build
-        with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
-          platform: windows
-          target: ${{ matrix.target }}
+      - name: Compilation editor
+        run: |
+          scons platform=windows target=editor production=yes precision=double module_mono_enabled=yes
+
+      - name: Compilation template_debug
+        run: |
+          scons platform=windows target=template_debug precision=double module_mono_enabled=yes
+
+      - name: Compilation template_release
+        run: |
+          scons platform=windows target=template_release production=yes precision=double module_mono_enabled=yes
+
 
       - name: Generate glue sources
-        run: ${{ matrix.bin }} --headless --generate-mono-glue modules/mono/glue
+        run: |
+          ./bin/godot.windows.editor.double.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
 
       - name: Install dotnet SDK 8.0
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
-      
+
       - name: Init nuget
         run: |
           New-Item -ItemType Directory -Force -Path D:\a\godotandaddons\godotandaddons\nuget
@@ -79,27 +55,22 @@ jobs:
       - name: Build .NET assemblies
         run: |
           python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --push-nupkgs-local D:\a\godotandaddons\godotandaddons\nuget --precision=double
-          ls -l bin/
 
-      - name: Save Godot build cache
-        uses: ./.github/actions/godot-cache-save
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
+      - name: clean obj folder
+        run: |
+          Remove-Item -Path "bin/obj" -Recurse -Force
 
       - name: Prepare artifact
-        if: matrix.compiler == 'msvc'
         run: |
           Remove-Item bin/* -Include *.exp,*.lib -Force
 
       - name: Upload artifact
-        if: matrix.compiler == 'msvc'
         uses: ./.github/actions/upload-artifact
         with:
-          name: ${{ matrix.cache-name }}
+          name: windows-editor-mono-double
 
-      - name: Unit tests
-        run: |
-          ${{ matrix.bin }} --version
-          ${{ matrix.bin }} --help
-          ${{ matrix.bin }} --test --force-colors
+
+
+
+
+

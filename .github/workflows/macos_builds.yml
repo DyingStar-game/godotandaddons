@@ -2,47 +2,22 @@ name: 🍎 macOS Builds
 on:
   workflow_call:
 
-# Global Settings
-env:
-  SCONS_FLAGS: >-
-    precision=double
-    module_mono_enabled=yes
-
 jobs:
   build-macos:
     runs-on: macos-latest
-    name: ${{ matrix.name }}
+    name: build-macos-editor
     timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Editor (target=editor)
-            cache-name: macos-editor
-            target: editor
-            bin: ./bin/godot.macos.editor.double.universal.mono
-
-          - name: Template (target=template_release)
-            cache-name: macos-template
-            target: template_release
-            bin: ./bin/godot.macos.template_release.double.universal.mono
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           repository: 'godotengine/godot'
-          ref: '4.5-stable'
+          ref: '4.5.1-stable'
           submodules: recursive
 
       - name: Select Xcode 16
         run: sudo xcode-select -s /Applications/Xcode_16.2.app
-
-      # - name: Restore Godot build cache
-      #   uses: ./.github/actions/godot-cache-restore
-      #   with:
-      #     cache-name: ${{ matrix.cache-name }}
-      #   continue-on-error: true
 
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
@@ -61,31 +36,32 @@ jobs:
       - name: Compilation (x86_64)
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=x86_64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }}
+          scons-flags: precision=double module_mono_enabled=yes arch=x86_64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }} production=yes
           platform: macos
-          target: ${{ matrix.target }}
+          target: editor
 
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} arch=arm64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }}
+          scons-flags: precision=double module_mono_enabled=yes arch=arm64 vulkan=${{ steps.vulkan-sdk.outputs.VULKAN_ENABLED }} production=yes
           platform: macos
-          target: ${{ matrix.target }}
+          target: editor
 
       - name: Generate glue sources (x86_64)
-        run: ./bin/godot.macos.${{ matrix.target }}.double.x86_64.mono --headless --generate-mono-glue modules/mono/glue
+        run: |
+          cd bin
+          ./godot.macos.editor.double.x86_64.mono --headless --generate-mono-glue modules/mono/glue
 
       - name: Generate glue sources (arm64)
-        run: ./bin/godot.macos.${{ matrix.target }}.double.arm64.mono --headless --generate-mono-glue modules/mono/glue
+        run: |
+          cd bin 
+          ./godot.macos.editor.double.arm64.mono --headless --generate-mono-glue modules/mono/glue
+          mv -f modules/mono/glue/GodotSharp/GodotSharp/Generated ../modules/mono/glue/GodotSharp/GodotSharp/
+          mv -f modules/mono/glue/GodotSharp/GodotSharpEditor/Generated ../modules/mono/glue/GodotSharp/GodotSharpEditor/
+          rm -fr modules
 
       - name: Build .NET assemblies
         run: ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin --godot-platform=macos --precision=double 
-
-      # - name: Save Godot build cache
-      #   uses: ./.github/actions/godot-cache-save
-      #   with:
-      #     cache-name: ${{ matrix.cache-name }}
-      #   continue-on-error: true
 
       - name: Prepare artifact
         run: |
@@ -98,4 +74,5 @@ jobs:
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
         with:
-          name: ${{ matrix.cache-name }}
+          name: macos-editor-mono-double
+
