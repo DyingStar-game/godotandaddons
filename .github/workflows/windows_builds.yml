@@ -12,7 +12,7 @@ jobs:
     # Windows 10 with latest image
     runs-on: windows-latest
     name: build-windows-editor
-    timeout-minutes: 120
+    timeout-minutes: 240
 
     steps:
       - name: Checkout
