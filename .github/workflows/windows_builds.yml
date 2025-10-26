@@ -29,21 +29,25 @@ jobs:
         run: |
           scons platform=windows target=editor production=yes precision=double module_mono_enabled=yes
 
-      - name: Compilation template_debug
-        run: |
-          scons platform=windows target=template_debug precision=double module_mono_enabled=yes
+      # - name: Compilation template_debug
+      #   run: |
+      #     scons platform=windows target=template_debug precision=double module_mono_enabled=yes
 
-      - name: Compilation template_release
-        run: |
-          scons platform=windows target=template_release production=yes precision=double module_mono_enabled=yes
+      # - name: Compilation template_release
+      #   run: |
+      #     scons platform=windows target=template_release production=yes precision=double module_mono_enabled=yes
 
       - name: Generate glue sources
-        run: |
-          cd bin
-          ./godot.windows.editor.double.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
-          Move-Item -Path "modules/mono/glue/GodotSharp/GodotSharp/Generated" -Destination "../modules/mono/glue/GodotSharp/GodotSharp/" -Force
-          Move-Item -Path "modules/mono/glue/GodotSharp/GodotSharpEditor/Generated" -Destination "../modules/mono/glue/GodotSharp/GodotSharpEditor/" -Force
-          Remove-Item -Path "modules" -Recurse -Force
+        run: ./bin/godot.windows.editor.double.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
+
+
+      # - name: Generate glue sources
+      #   run: |
+      #     cd bin
+      #     ./godot.windows.editor.double.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
+      #     Move-Item -Path "modules/mono/glue/GodotSharp/GodotSharp/Generated" -Destination "../modules/mono/glue/GodotSharp/GodotSharp/" -Force
+      #     Move-Item -Path "modules/mono/glue/GodotSharp/GodotSharpEditor/Generated" -Destination "../modules/mono/glue/GodotSharp/GodotSharpEditor/" -Force
+      #     Remove-Item -Path "modules" -Recurse -Force
 
       - name: Install dotnet SDK 8.0
         uses: actions/setup-dotnet@v5
