@@ -40,7 +40,7 @@ jobs:
       - name: Generate glue sources
         run: |
           cd bin
-          godot.windows.editor.double.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
+          ./godot.windows.editor.double.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
           Move-Item -Path "modules/mono/glue/GodotSharp/GodotSharp/Generated" -Destination "../modules/mono/glue/GodotSharp/GodotSharp/" -Force
           Move-Item -Path "modules/mono/glue/GodotSharp/GodotSharpEditor/Generated" -Destination "../modules/mono/glue/GodotSharp/GodotSharpEditor/" -Force
           Remove-Item -Path "modules" -Recurse -Force
