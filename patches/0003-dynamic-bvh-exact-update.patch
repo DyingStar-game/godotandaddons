@@ -1,0 +1,17 @@
+diff --git a/core/math/dynamic_bvh.cpp b/core/math/dynamic_bvh.cpp
+index 1195072..f60cc27 100644
+--- a/core/math/dynamic_bvh.cpp
++++ b/core/math/dynamic_bvh.cpp
+@@ -366,7 +366,11 @@ bool DynamicBVH::update(const ID &p_id, const AABB &p_box) {
+ 	volume.min = p_box.position;
+ 	volume.max = p_box.position + p_box.size;
+ 
+-	if (leaf->volume.min.is_equal_approx(volume.min) && leaf->volume.max.is_equal_approx(volume.max)) {
++	// Exact, not is_equal_approx: that tolerance is relative (1e-5 of the coordinate), so in a large world it is
++	// hundreds of km (85 million km from the origin: 150 to 750 km per axis). An instance moved by less kept its
++	// old place in the tree, and the lights that find their shadow casters through it (omni, spot) drew empty
++	// shadows. A box that did not move at all is still skipped.
++	if (leaf->volume.min == volume.min && leaf->volume.max == volume.max) {
+ 		// noop
+ 		return false;
+ 	}
