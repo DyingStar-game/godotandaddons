@@ -1,0 +1,15 @@
+--- a/servers/rendering/renderer_scene_render.cpp
++++ b/servers/rendering/renderer_scene_render.cpp
+@@ -87,7 +87,11 @@
+ 	Transform3D main_transform_inv = main_transform.inverse();
+ 
+ 	// 5. figure out far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
+-	Vector3 far_center = (planes[0][Projection::PLANE_FAR].get_center() + planes[1][Projection::PLANE_FAR].get_center()) * 0.5;
++	// Each eye's far plane is taken at the point of it nearest that eye, not nearest the world's origin
++	// (Plane::get_center): in a large world, far from the origin, that point lies billions of units aside, and the
++	// smallest angle between the eyes then moved the combined far plane by more than the far distance itself:
++	// set_frustum failed ("p_far <= p_near") and the frame was culled with an identity frustum.
++	Vector3 far_center = (planes[0][Projection::PLANE_FAR].project(p_transforms[0].origin) + planes[1][Projection::PLANE_FAR].project(p_transforms[1].origin)) * 0.5;
+ 	Plane far_plane = Plane(-z, far_center);
+ 
+ 	/////////////////////////////////////////////////////////////////////////////

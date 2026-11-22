@@ -1,0 +1,63 @@
+--- a/scene/resources/material.cpp
++++ b/scene/resources/material.cpp
+@@ -1236,11 +1236,16 @@
+ 			// This ensures the billboard faces the camera when casting shadows.
+ 			code += R"(
+ 	// Billboard Mode: Enabled
++	// The origin is MODELVIEW_MATRIX's own, kept: with precision=double it is exact (the model and view origins
++	// are added in emulated doubles). VIEW_MATRIX * MODEL_MATRIX[3] adds two float translations that nearly
++	// cancel far from the world's origin, and put a billboard near the camera thousands of units away.
++	vec4 billboard_origin = MODELVIEW_MATRIX[3];
+ 	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(
+ 			MAIN_CAM_INV_VIEW_MATRIX[0],
+ 			MAIN_CAM_INV_VIEW_MATRIX[1],
+ 			MAIN_CAM_INV_VIEW_MATRIX[2],
+-			MODEL_MATRIX[3]);
++			vec4(0.0, 0.0, 0.0, 1.0));
++	MODELVIEW_MATRIX[3] = billboard_origin;
+ )";
+ 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+ 				code += R"(
+@@ -1259,11 +1264,16 @@
+ 			// This ensures the billboard faces the camera when casting shadows.
+ 			code += R"(
+ 	// Billboard Mode: Y-Billboard
++	// The origin is MODELVIEW_MATRIX's own, kept: with precision=double it is exact (the model and view origins
++	// are added in emulated doubles). VIEW_MATRIX * MODEL_MATRIX[3] adds two float translations that nearly
++	// cancel far from the world's origin, and put a billboard near the camera thousands of units away.
++	vec4 billboard_origin = MODELVIEW_MATRIX[3];
+ 	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(
+ 			vec4(normalize(cross(vec3(0.0, 1.0, 0.0), MAIN_CAM_INV_VIEW_MATRIX[2].xyz)), 0.0),
+ 			vec4(0.0, 1.0, 0.0, 0.0),
+ 			vec4(normalize(cross(MAIN_CAM_INV_VIEW_MATRIX[0].xyz, vec3(0.0, 1.0, 0.0))), 0.0),
+-			MODEL_MATRIX[3]);
++			vec4(0.0, 0.0, 0.0, 1.0));
++	MODELVIEW_MATRIX[3] = billboard_origin;
+ )";
+ 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+ 				code += R"(
+@@ -1281,11 +1291,15 @@
+ 			// Make billboard and rotated by rotation.
+ 			code += R"(
+ 	// Billboard Mode: Particles
++	// The origin is MODELVIEW_MATRIX's own, kept: with precision=double it is exact (the model and view origins
++	// are added in emulated doubles). VIEW_MATRIX * MODEL_MATRIX[3] adds two float translations that nearly
++	// cancel far from the world's origin, and put a billboard near the camera thousands of units away.
++	vec4 billboard_origin = MODELVIEW_MATRIX[3];
+ 	mat4 mat_world = mat4(
+ 			normalize(INV_VIEW_MATRIX[0]),
+ 			normalize(INV_VIEW_MATRIX[1]),
+ 			normalize(INV_VIEW_MATRIX[2]),
+-			MODEL_MATRIX[3]);
++			vec4(0.0, 0.0, 0.0, 1.0));
+ 	mat_world = mat_world * mat4(
+ 			vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0),
+ 			vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0),
+@@ -1294,6 +1308,7 @@
+ )";
+ 			// Set modelview.
+ 			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
++			code += "	MODELVIEW_MATRIX[3] = billboard_origin;\n";
+ 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+ 				code += R"(
+ 	// Billboard Keep Scale: Enabled

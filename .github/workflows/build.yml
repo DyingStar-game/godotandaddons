@@ -1,0 +1,141 @@
+name: Build the DyingStar engine
+
+# Godot with our patches/ (double precision, Mono), Linux and Windows x86_64: editors, export templates and the
+# release templates' debug symbols, published as a GitHub release that DyingStar's CI downloads
+# (GODOT_RELEASE in its workflows and .docker/Dockerfile).
+#
+# - Push a tag <godot tag>-ds<N> (e.g. 4.7.2-stable-ds1): builds that Godot tag and publishes the release.
+# - Or run it by hand (Actions > Run workflow), as a draft to check first.
+# - A pull request changing the build or the patches builds PR_GODOT_TAG without publishing anything.
+# Bump N whenever the patches change: DyingStar's caches are keyed on the release name.
+
+on:
+  push:
+    tags:
+      - "*-ds*"
+  pull_request:
+    paths:
+      - "patches/**"
+      - "ci/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+    inputs:
+      godot_tag:
+        description: "Godot tag to build (godotengine/godot)"
+        required: true
+        default: "4.7.2-stable"
+      release_tag:
+        description: "Release to publish (<godot tag>-ds<N>)"
+        required: true
+        default: "4.7.2-stable-ds1"
+      draft:
+        description: "Publish as a draft"
+        type: boolean
+        default: true
+
+concurrency:
+  group: engine-build-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Linux + Windows x86_64 (Mono, double)
+    # The self-hosted runner never runs a fork's pull request.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: dyingstar-runners
+    timeout-minutes: 720
+    env:
+      WORK: ${{ github.workspace }}/work
+      # The Godot tag a pull request builds (to check the patches and the build, nothing is published).
+      PR_GODOT_TAG: 4.7.2-stable
+    steps:
+      - name: Install build tooling
+        run: |
+          # The self-hosted ARC runner image is minimal.
+          sudo apt-get update
+          sudo apt-get install -y git curl unzip zip
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Versions
+        id: v
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            release="${GITHUB_REF_NAME}"
+            godot="${release%-ds*}"
+            draft=false
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            godot="${PR_GODOT_TAG}"
+            release="${godot}-ds0"
+            draft=true
+          else
+            release="${{ inputs.release_tag }}"
+            godot="${{ inputs.godot_tag }}"
+            draft="${{ inputs.draft }}"
+          fi
+          case "${release}" in
+            "${godot}"-ds[0-9]*) ;;
+            *) echo "::error::release '${release}' must be '${godot}-ds<N>'"; exit 1 ;;
+          esac
+          echo "godot=${godot}" >> "$GITHUB_OUTPUT"
+          echo "release=${release}" >> "$GITHUB_OUTPUT"
+          echo "draft=${draft}" >> "$GITHUB_OUTPUT"
+          echo "Building ${godot} as ${release} (draft: ${draft}) on $(nproc) cores, $(free -g | awk '/Mem/{print $2}') GiB"
+          df -h "${GITHUB_WORKSPACE}"
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: harbor.dyingstar-game.space
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Patched source and libraries
+        run: STEPS=fetch ci/build.sh "${{ steps.v.outputs.godot }}" "${WORK}"
+
+      - name: Linux build
+        run: STEPS=linux ci/build.sh "${{ steps.v.outputs.godot }}" "${WORK}"
+
+      - name: Windows build
+        run: STEPS=windows ci/build.sh "${{ steps.v.outputs.godot }}" "${WORK}"
+
+      - name: Package
+        run: STEPS=package ci/build.sh "${{ steps.v.outputs.godot }}" "${WORK}"
+
+      - name: Check the patches are in
+        run: |
+          # Patch 0002 rewrites a shader string: it must be in every binary.
+          cd "${WORK}/out"
+          for f in linux/tools-mono/godot.linuxbsd.editor.double.x86_64.mono \
+                   linux/templates-mono/godot.linuxbsd.template_release.double.x86_64.mono \
+                   windows/tools-mono/godot.windows.editor.double.x86_64.mono.exe \
+                   windows/templates-mono/godot.windows.template_release.double.x86_64.mono.exe; do
+            grep -q -a billboard_origin "$f" || { echo "::error::$f has no patch 0002"; exit 1; }
+          done
+
+      - name: Release notes
+        run: |
+          {
+            echo "Godot **${{ steps.v.outputs.godot }}** (godotengine/godot), double precision, Mono, built for DyingStar"
+            echo "with these engine patches (\`patches/\` at ${GITHUB_SHA::9}):"
+            echo
+            for p in patches/*.patch; do echo "- \`$(basename "$p")\`"; done
+            echo
+            echo "Linux and Windows x86_64 only. The export templates (.tpz) hold Linux and Windows x86_64."
+            echo "The release templates' DWARF debug symbols are in the \`_debugsymbols.zip\` (crash dumps)."
+          } > "${WORK}/notes.md"
+
+      - name: Publish
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.v.outputs.release }}
+          target_commitish: ${{ github.sha }}
+          name: Godot ${{ steps.v.outputs.release }}
+          body_path: ${{ env.WORK }}/notes.md
+          draft: ${{ steps.v.outputs.draft == 'true' }}
+          files: ${{ env.WORK }}/release/*
