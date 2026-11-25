@@ -30,6 +30,11 @@ the build at once.
 - `0003-dynamic-bvh-exact-update.patch`: `DynamicBVH::update` skipped a move within a relative 1e-5. That is
   150 to 750 km at 85 million km from the star. The rendering tree kept instances where they had been, and the
   omni and spot lights, which find their shadow casters through it, drew empty shadows (DyingStar #512).
+- `0004-nav-second-pass-polygon-budget.patch`: when a path target is unreachable, the navigation search runs a
+  second pass towards the closest reachable polygon, but kept counting polygons from the first pass. A reachable
+  area of more than half of `path_search_max_polygons` (4096) then ran out of budget, printed "It's not expect to
+  not find the most reachable polygons" and returned a path that never left the begin polygon: an NPC asked for an
+  unreachable goal stood still instead of walking to the closest point (2D and 3D).
 
 To add one, write it against the tag with `git diff` in a clone of godotengine/godot. Put a comment in the code
 saying why. Then publish a new release, with N + 1.

@@ -1,0 +1,32 @@
+diff --git a/modules/navigation_2d/2d/nav_mesh_queries_2d.cpp b/modules/navigation_2d/2d/nav_mesh_queries_2d.cpp
+index 70c715d..43d1ac4 100644
+--- a/modules/navigation_2d/2d/nav_mesh_queries_2d.cpp
++++ b/modules/navigation_2d/2d/nav_mesh_queries_2d.cpp
+@@ -456,6 +456,11 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
+ 			navigation_polys[_bp_id].traveled_distance = 0;
+ 			least_cost_id = _bp_id;
+ 			reachable_end = nullptr;
++			// The search starts again from the begin polygon, so it gets the polygon budget again. Left at the count of
++			// the first pass, a reachable area of more than half of path_search_max_polygons ran out of budget before
++			// reaching the polygon the first pass had found: the heap was cleared, the error below was printed and the
++			// path stopped in the begin polygon instead of leading to the closest reachable point.
++			processed_polygon_count = 0;
+ 		} else {
+ 			// Pop the polygon with the lowest travel cost from the heap of traversable polygons.
+ 			least_cost_id = p_query_task.path_query_slot->poly_to_id[traversable_polys.pop()->poly];
+diff --git a/modules/navigation_3d/3d/nav_mesh_queries_3d.cpp b/modules/navigation_3d/3d/nav_mesh_queries_3d.cpp
+index 4ce3df6..2d7b24d 100644
+--- a/modules/navigation_3d/3d/nav_mesh_queries_3d.cpp
++++ b/modules/navigation_3d/3d/nav_mesh_queries_3d.cpp
+@@ -455,6 +455,11 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
+ 			navigation_polys[_bp_id].traveled_distance = 0;
+ 			least_cost_id = _bp_id;
+ 			reachable_end = nullptr;
++			// The search starts again from the begin polygon, so it gets the polygon budget again. Left at the count of
++			// the first pass, a reachable area of more than half of path_search_max_polygons ran out of budget before
++			// reaching the polygon the first pass had found: the heap was cleared, the error below was printed and the
++			// path stopped in the begin polygon instead of leading to the closest reachable point.
++			processed_polygon_count = 0;
+ 		} else {
+ 			// Pop the polygon with the lowest travel cost from the heap of traversable polygons.
+ 			least_cost_id = p_query_task.path_query_slot->poly_to_id[traversable_polys.pop()->poly];
