@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs INSIDE the godot-linux build container (godotengine/build-containers), from ci/build.sh:
 # the Linux x86_64 Mono editor, the C# glue and GodotSharp assemblies (with their NuGet packages), then the
-# export templates (debug; release with separate debug symbols). Mounts: /root/godot (patched source),
+# export templates (debug and release, each with separate debug symbols). Mounts: /root/godot (patched source),
 # /root/accesskit, /root/out.
 set -euo pipefail
 trap 'chown -R "${HOST_UID:-0}:${HOST_GID:-0}" /root/godot /root/out' EXIT
@@ -25,7 +25,7 @@ cp -rp bin/* /root/out/linux/tools-mono/
 rm -rf bin
 drop editor
 
-$SCONS platform=linuxbsd arch=x86_64 $OPTIONS target=template_debug
+$SCONS platform=linuxbsd arch=x86_64 $OPTIONS $SYMBOLS target=template_debug
 $SCONS platform=linuxbsd arch=x86_64 $OPTIONS $SYMBOLS target=template_release
 mkdir -p /root/out/linux/templates-mono
 cp -rp bin/* /root/out/linux/templates-mono/
