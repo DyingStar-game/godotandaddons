@@ -126,7 +126,8 @@ jobs:
             for p in patches/*.patch; do echo "- \`$(basename "$p")\`"; done
             echo
             echo "Linux and Windows x86_64 only. The export templates (.tpz) hold Linux and Windows x86_64."
-            echo "The release templates' DWARF debug symbols are in the \`_debugsymbols.zip\` (crash dumps)."
+            echo "The release templates' DWARF debug symbols are in \`_release_templates_debugsymbols.zip\` (crash dumps),"
+            echo "the debug templates' in \`_debug_templates_debugsymbols.zip\` (DyingStar's diagnostic build)."
           } > "${WORK}/notes.md"
 
       - name: Publish

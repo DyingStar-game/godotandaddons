@@ -13,6 +13,7 @@ A release is named `<godot tag>-ds<N>`, e.g. `4.7.2-stable-ds1`. The files in it
 | `Godot_v<v>_mono_win64.zip` | Windows editor, console wrapper + `GodotSharp/` |
 | `Godot_v<v>_mono_export_templates.tpz` | Linux and Windows x86_64 export templates |
 | `Godot_v<v>_mono_release_templates_debugsymbols.zip` | DWARF of the release templates, to read players' crash dumps |
+| `Godot_v<v>_mono_debug_templates_debugsymbols.zip` | DWARF of the debug templates: DyingStar's diagnostic build ships the Windows one beside its exe |
 
 Only x86_64 Linux and Windows: what the game ships and its CI uses.
 

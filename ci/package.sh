@@ -9,6 +9,7 @@
 #   Godot_v<v>_mono_win64.zip                             editor, console wrapper + GodotSharp/
 #   Godot_v<v>_mono_export_templates.tpz                  Linux and Windows x86_64 templates, version.txt
 #   Godot_v<v>_mono_release_templates_debugsymbols.zip    the release templates' DWARF (crash dumps)
+#   Godot_v<v>_mono_debug_templates_debugsymbols.zip      the debug templates' DWARF (diagnostic build)
 #   SHA512-SUMS.txt
 set -euo pipefail
 
@@ -63,6 +64,18 @@ cp "${wt}.template_release.double.x86_64.mono.exe.debugsymbols" "${sym}/windows_
 if [ -f "${wt}.template_release.double.x86_64.mono.console.exe.debugsymbols" ]; then
   cp "${wt}.template_release.double.x86_64.mono.console.exe.debugsymbols" \
     "${sym}/windows_release_x86_64_console.exe.debugsymbols"
+fi
+zip -q -9 -r "${rel}/${sym}.zip" "${sym}"
+
+# Debug symbols of the debug templates: DyingStar's diagnostic build (a debug export) ships the Windows one
+# beside its exe, as DyingStar.exe.debugsymbols, for Godot's crash handler to print named frames in the log.
+sym="${base}_mono_debug_templates_debugsymbols"
+mkdir -p "${sym}"
+cp "${lt}.template_debug.double.x86_64.mono.debugsymbols" "${sym}/linux_debug.x86_64.debugsymbols"
+cp "${wt}.template_debug.double.x86_64.mono.exe.debugsymbols" "${sym}/windows_debug_x86_64.exe.debugsymbols"
+if [ -f "${wt}.template_debug.double.x86_64.mono.console.exe.debugsymbols" ]; then
+  cp "${wt}.template_debug.double.x86_64.mono.console.exe.debugsymbols" \
+    "${sym}/windows_debug_x86_64_console.exe.debugsymbols"
 fi
 zip -q -9 -r "${rel}/${sym}.zip" "${sym}"
 
